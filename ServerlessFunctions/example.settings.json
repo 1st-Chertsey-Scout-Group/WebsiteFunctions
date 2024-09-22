@@ -6,6 +6,8 @@
         "1stchertseyscoutgroupcostab_TABLEDB": "",
         "1stchertseyscoutgroupacs_COMMUNICATIONSERVICES": "",
         "Email_Sender": "",
-        "Email_BCCRecipient": ""
+        "Email_BCCRecipient": "",
+        "Altcha_Url": "",
+        "Altcha_ApiKey": ""
     }
 }

@@ -39,11 +39,20 @@ namespace ServerlessFunctions
         public required string Altcha { get; set; }
     }
 
+    public class ContactFormResponse
+    {
+        [JsonPropertyName("success")]
+        public required bool Success { get; set; }
+    }
+
     public class ContactForm
     {
         private static readonly string ConnectionString = Environment.GetEnvironmentVariable("1stchertseyscoutgroupacs_COMMUNICATIONSERVICES") ?? string.Empty;
         private static readonly string Sender = Environment.GetEnvironmentVariable("Email_Sender") ?? string.Empty;
         private static readonly string BCCRecipient = Environment.GetEnvironmentVariable("Email_BCCRecipient") ?? string.Empty;
+
+        private static readonly string AltchaUrl = Environment.GetEnvironmentVariable("Altcha_Url") ?? string.Empty;
+        private static readonly string AltchaApiKey = Environment.GetEnvironmentVariable("Altcha_ApiKey") ?? string.Empty;
 
         private readonly ILogger<ContactForm> _logger;
         private readonly HttpClient _client;
@@ -76,10 +85,16 @@ namespace ServerlessFunctions
                 throw new Exception("Environment variable 'BCCRecipient' is empty");
             }
 
+            if (!IsValidAltcha(formBody.Altcha))
+            {
+                return new OkObjectResult(new ContactFormResponse() { Success = false });
+            }
+
+
             string[]? recipients = GetRecipients(recipientsClient, formBody.Topic);
             if (recipients == null || recipients.Length == 0)
             {
-                return new OkObjectResult(false);
+                return new OkObjectResult(new ContactFormResponse() { Success = false });
             }
 
             var subject = $"New Enquiry Submitted: {formBody.Topic} - {formBody.FirstName} {formBody.LastName}";
@@ -94,11 +109,17 @@ namespace ServerlessFunctions
             catch (RequestFailedException ex)
             {
                 Console.WriteLine($"Email send operation failed with error code: {ex.ErrorCode}, message: {ex.Message}");
+                return new OkObjectResult(new ContactFormResponse() { Success = false });
             }
 
 
-            _logger.LogInformation("C# HTTP trigger function processed a request.");
-            return new OkObjectResult("Welcome to Azure Functions!");
+            return new OkObjectResult(new ContactFormResponse() { Success = true });
+        }
+
+
+        private bool IsValidAltcha(string altcha)
+        {
+            return true;
         }
 
         private string[]? GetRecipients(TableClient recipientsClient, string topic)
