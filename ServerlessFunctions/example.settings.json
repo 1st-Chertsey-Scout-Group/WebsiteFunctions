@@ -1,0 +1,13 @@
+{
+    "IsEncrypted": false,
+    "Values": {
+        "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+        "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+        "1stchertseyscoutgroupcostab_TABLEDB": "",
+        "1stchertseyscoutgroupacs_COMMUNICATIONSERVICES": "",
+        "Email_Sender": "",
+        "Email_BCCRecipient": "",
+        "Altcha_Url": "",
+        "Altcha_ApiKey": ""
+    }
+}
