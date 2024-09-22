@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -37,6 +38,17 @@ namespace ServerlessFunctions
 
         [JsonPropertyName("altcha")]
         public required string Altcha { get; set; }
+
+        public string FormattedTopic
+        {
+            get
+            {
+                var temp = Topic.Replace("-", " ");
+
+                TextInfo myTI = new CultureInfo("en-GB", false).TextInfo;
+                return myTI.ToTitleCase(temp);
+            }
+        }
     }
 
     public class ContactFormResponse
@@ -85,6 +97,16 @@ namespace ServerlessFunctions
                 throw new Exception("Environment variable 'BCCRecipient' is empty");
             }
 
+            if (AltchaUrl == string.Empty)
+            {
+                throw new Exception("Environment variable 'AltchaUrl' is empty");
+            }
+
+            if (AltchaApiKey == string.Empty)
+            {
+                throw new Exception("Environment variable 'AltchaApiKey' is empty");
+            }
+
             if (!IsValidAltcha(formBody.Altcha))
             {
                 return new OkObjectResult(new ContactFormResponse() { Success = false });
@@ -97,7 +119,7 @@ namespace ServerlessFunctions
                 return new OkObjectResult(new ContactFormResponse() { Success = false });
             }
 
-            var subject = $"New Enquiry Submitted: {formBody.Topic} - {formBody.FirstName} {formBody.LastName}";
+            var subject = $"Website Enquiry: {formBody.FormattedTopic} - {formBody.FirstName} {formBody.LastName}";
             var body = BuildEmailHtml(formBody);
             var emailMessage = BuildEmail(subject, body, recipients, formBody.Email);
 
@@ -135,7 +157,7 @@ namespace ServerlessFunctions
 
         private static EmailMessage BuildEmail(string subject, string body, string[] recipients, string replyTo)
         {
-            var emailContent = new EmailContent($"Website Enquiry: {subject}")
+            var emailContent = new EmailContent(subject)
             {
                 Html = body
             };
@@ -173,67 +195,16 @@ namespace ServerlessFunctions
 <head>
     <meta charset=""UTF-8"">
     <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-    <title>New Enquiry Notification</title>
-    <style>
-        body {{
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f4f4f7;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }}
-        .email-container {{
-            max-width: 600px;
-            margin: 30px auto;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            line-height: 1.6;
-        }}
-        .header {{text - align: center;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #eee;
-        }}
-        .header h2 {{
-        color: #2d3748;
-        }}
-        .content {{
-        padding: 20px 0;
-        }}
-        .details-table {{
-        width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }}
-        .details-table td {{
-        padding: 10px;
-            border-bottom: 1px solid #eee;
-        }}
-        .details-table td:first-child {{
-        font-weight: bold;
-            color: #2d3748;
-        }}
-        .details-table tr:last-child td {{
-        border - bottom: none;
-        }}
-        .footer {{
-        text-align: center;
-            padding-top: 20px;
-            border-top: 2px solid #eee;
-            color: #888;
-        }}
-    </style>
 </head>
 <body>
-    <div class=""email-container"">
-        <div class=""header"">
-            <h2>New Enquiry: {formBody.Topic} - {formBody.FirstName} {formBody.LastName}</h2>
+    <div>
+        <div>
+            <h2>Website Enquiry: {formBody.FormattedTopic} - {formBody.FirstName} {formBody.LastName}</h2>
         </div>
-        <div class=""content"">
+        <div>
             <p>A new enquiry has been submitted through the website. Below are the details:</p>
 
-            <table class=""details-table"">
+            <table>
                 <tr>
                     <td>Name:</td>
                     <td>{formBody.FirstName} {formBody.LastName}</td>
@@ -244,7 +215,7 @@ namespace ServerlessFunctions
                 </tr>
                 <tr>
                     <td>Topic:</td>
-                    <td>{formBody.Topic}</td>
+                    <td>{formBody.FormattedTopic}</td>
                 </tr>
                 <tr>
                     <td>Subject:</td>
@@ -256,10 +227,10 @@ namespace ServerlessFunctions
                 </tr>
             </table>
 
-            <p style=""margin-top: 20px;"">Please review and follow up as necessary.</p>
+            <p>Please review and follow up as necessary.</p>
         </div>
 
-        <div class=""footer"">
+        <div>
             <p></p>
         </div>
     </div>
